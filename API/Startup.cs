@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Core.Interfaces;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -26,9 +27,13 @@ namespace API
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
+				
         public void ConfigureServices(IServiceCollection services) //IServiceCollection class was injected in Startup class DI
         {
+						//The ordering doesnt metter all of them will start
+						//service lifetime: Scoped - the service will be alived for the lifetime of a HTTP request
 
+						services.AddScoped<IProductRepository, ProductRepository>(); //<interface, an instance of the related class>
             services.AddControllers();
 						services.AddSwaggerGen();
 						services.AddDbContext<StoreContext>(x => x.UseSqlite(_config.GetConnectionString("DefaultConnection")));
@@ -37,6 +42,7 @@ namespace API
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
 				// **Middleware*** it's a software that will manipuilate/do something with the HTTP request in the way in or out from API Controller
+				//the ordering is important !!!
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
