@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using API.Helpers;
 using Core.Interfaces;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Builder;
@@ -33,7 +34,9 @@ namespace API
 						//The ordering doesnt metter all of them will start
 						//service lifetime: Scoped - the service will be alived for the lifetime of a HTTP request
 
-						services.AddScoped<IProductRepository, ProductRepository>(); //<interface, an instance of the related class>
+						services.AddScoped<IProductRepository, ProductRepository>(); //<interface, and instance of the related class>
+						services.AddScoped(typeof(IGenericRepository<>), (typeof(GenericRepository<>)));
+						services.AddAutoMapper(typeof(MappingProfiles));
             services.AddControllers();
 						services.AddSwaggerGen();
 						services.AddDbContext<StoreContext>(x => x.UseSqlite(_config.GetConnectionString("DefaultConnection")));
@@ -55,6 +58,8 @@ namespace API
             app.UseHttpsRedirection(); //if we accidantly went to HTTP it will autoredirect us to HTTPS.
 
             app.UseRouting(); //to be able to access API controller and it's Endpoints via middleware
+
+						app.UseStaticFiles(); //this middleware allowes to use Images for example (wwwroot)
 
             app.UseAuthorization();
 
