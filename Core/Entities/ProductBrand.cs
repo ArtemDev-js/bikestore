@@ -1,6 +1,6 @@
 namespace Core.Entities
 {
-	public class ProductBrand: BasaEntity
+	public class ProductBrand: BaseEntity
 	{
 		public string Name { get; set; }
 	}

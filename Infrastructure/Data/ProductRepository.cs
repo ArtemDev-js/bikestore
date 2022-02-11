@@ -7,7 +7,7 @@ namespace Infrastructure.Data
 	public class ProductRepository : IProductRepository
 	{
     private readonly StoreContext _context;
-		public ProductRepository(StoreContext context)  //inject StoreContext to use int methods (DbContext)
+		public ProductRepository(StoreContext context)  //inject StoreContext to use its methods (DbContext)
 		{
       _context = context;
 		}

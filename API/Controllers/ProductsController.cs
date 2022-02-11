@@ -1,17 +1,14 @@
-using Infrastructure.Data;
 using Core.Entities;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Core.Interfaces;
 using Core.Specifications;
 using API.Dtos;
 using AutoMapper;
+using API.Errors;
 
 namespace API.Controllers
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class ProductsController : ControllerBase
+    public class ProductsController : BaseApiController
     {
         private readonly IGenericRepository<Product> _productsRepo;
         private readonly IGenericRepository<ProductBrand> _productBrandsRepo;
@@ -42,11 +39,15 @@ namespace API.Controllers
         }
 
         [HttpGet("{id}")]  //endpoint
+        [ProducesResponseType(StatusCodes.Status200OK)] //response format
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)] //if response is 404NotFound return a typeof ApiResponse by passig our StatusCodes.Status404NotFound info into it
         public async Task<ActionResult<ProductToReturnDto>> GetProduct(int id) 
         {
 						var spec = new ProductsWithTypesAndBrandsSpecification(id); //calls constructor with the parameter in ProductsWithTypesAndBrandsSpecification
 
             var product =  await _productsRepo.GetEntityWithSpec(spec); //goes to GenericRepo and execute GetEntityWithSpec(spec)
+
+            if(product == null) return NotFound(new ApiResponse(404)); //if product not found...
 
 						return _mapper.Map<Product,ProductToReturnDto>(product);
         }

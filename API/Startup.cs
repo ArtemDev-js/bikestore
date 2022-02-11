@@ -1,20 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using API.Extentions;
 using API.Helpers;
-using Core.Interfaces;
+using API.Middleware;
 using Infrastructure.Data;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Models;
 
 namespace API
 {
@@ -27,19 +15,19 @@ namespace API
       			_config = config;
         }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-				
+        // This method gets called by the runtime. Use this method to add services to the Dependancy Injection container.
         public void ConfigureServices(IServiceCollection services) //IServiceCollection class was injected in Startup class DI
         {
-						//The ordering doesnt metter all of them will start
 						//service lifetime: Scoped - the service will be alived for the lifetime of a HTTP request
 
-						services.AddScoped<IProductRepository, ProductRepository>(); //<interface, and instance of the related class>
-						services.AddScoped(typeof(IGenericRepository<>), (typeof(GenericRepository<>)));
+
 						services.AddAutoMapper(typeof(MappingProfiles));
-            services.AddControllers();
+            services.AddControllers(); 
 						services.AddSwaggerGen();
 						services.AddDbContext<StoreContext>(x => x.UseSqlite(_config.GetConnectionString("DefaultConnection")));
+
+            services.AddApplicationServices(); //add services from ourcd ApplicationServicesExtensions.cs
+            services.AddSwaggerDocumentation();
 
         }
 
@@ -48,12 +36,9 @@ namespace API
 				//the ordering is important !!!
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage(); //if we are in developement mode this action will give us more info about the exceptuion if occure
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebAPIv5 v1"));
-            }
+            app.UseMiddleware<ExceptionMiddleware>(); //first middleware !!!
+
+            app.UseStatusCodePagesWithReExecute("/errors/{0}"); // when we will hit this middlware it will go to our ErrorController with a statusCode {}
 
             app.UseHttpsRedirection(); //if we accidantly went to HTTP it will autoredirect us to HTTPS.
 
@@ -62,6 +47,8 @@ namespace API
 						app.UseStaticFiles(); //this middleware allowes to use Images for example (wwwroot)
 
             app.UseAuthorization();
+
+            app.UseSwaggerDocumentation();
 
             app.UseEndpoints(endpoints =>
             {

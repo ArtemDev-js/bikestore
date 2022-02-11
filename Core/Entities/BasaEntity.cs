@@ -1,6 +1,6 @@
 namespace Core.Entities
 {
-    public class BasaEntity
+    public class BaseEntity
     {
         public int Id { get; set; }
 				
